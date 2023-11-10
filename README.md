@@ -86,7 +86,7 @@ $ ./index.js
 npm link
 ```
 
-![image-20231109180605145](C:\Users\郎金杰\AppData\Roaming\Typora\typora-user-images\image-20231109180605145.png)
+![image-20231110170818478](C:\Users\郎金杰\Desktop\workspace\study\webpack\ljj-react-create-app-cli\README.assets\image-20231110170818478-1699607310036-1-1699607317247-3.png)
 
 ```javascript
 const { program } = require("commander");
@@ -156,3 +156,6 @@ program.version(require("../package.json").version);
 program.parse(process.argv);
 ```
 
+`commander`自身附带了`--help`指令，导入成功后，在命令执行`jinjie --help`，可以打印基本的帮助提示。然后我们就可以使用如下的指令了：
+
+![image-20231110170458547](C:\Users\郎金杰\Desktop\workspace\study\webpack\ljj-react-create-app-cli\README.assets\image-20231110170458547.png)
