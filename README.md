@@ -340,3 +340,71 @@ pizza details:
 > 具有预期选项参数的选项的贪婪的，并且无论值如何，都会消耗参数。所以`--id -xyz`读取`-xyz`作为选项参数
 
 通过`program.parse(arguments)`方法处理参数，没有被使用的选项会存放在`program.args`数组中。该方法的参数是可选的，默认值为`process.argv`。
+
+#### 4.2.2 选项的默认值
+
+选项可以设置一个默认值。
+
+```javascript
+#!/usr/bin/env node
+
+const { Command } = require("commander");
+const program = new Command();
+
+// 可选参数
+program.option('-c, --cheese <type>', 'add the specified type of cheese', 'blue')
+
+// program.parse(process.argv)
+program.parse()
+const options = program.opts()
+
+console.log(`cheese: ${options.cheese}`)
+```
+
+```shell
+$ jinjie
+cheese: red
+```
+
+> 注：选项默认值，必须在该选项不输入的情况下生效，不能只输入选项，不输入选项值的情况
+
+#### 4.2.3 必填选项
+
+通过`.requireOption()`方法可以设置选项为必填。必填选项要么设置有默认值，要么必须在命令行中输入，对应的属性字段在解析时必定会有赋值。该方法其余参数与`.option()`一致。
+
+```javascript
+#!/usr/bin/env node
+
+const { Command } = require("commander");
+const program = new Command();
+
+program.requiredOption("-c, --cheese <type>", "pizza must have cheese");
+
+program.parse();
+```
+
+```shell
+$ jinjie
+error: required option '-c, --cheese <type>' not specified
+```
+
+详细的信息可以看[官方文档 - 中文](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2Ftj%2Fcommander.js%2Fblob%2Fmaster%2FReadme_zh-CN.md)。
+
+### 4.3 监听指令
+
+```shell
+#!/usr/bin/env node
+
+// ...
+
+// 监听指令
+program.on("--help", function () {
+  console.log(""); // 一般打一行空行，便于阅读
+  console.log("others");
+});
+
+program.parse(process.argv);
+
+// ...
+```
+

@@ -40,16 +40,27 @@ const limit = options.first ? 1 : undefined;
 console.log("args", program.args);
 console.log(program.args[0]?.split(options.separator, limit)); */
 
-program
+/* program
   .option('-d, --debug', 'output extra debugging')
   .option('-s, --small', 'small pizza size')
-  .option('-p, --pizza-type <type>', 'flavour of pizza')
+  .option('-p, --pizza-type <type>', 'flavour of pizza') */
 
-program.parse(process.argv)
-// program.parse()
+// 可选参数
+/* program.option('-c, --cheese <type>', 'add the specified type of cheese', 'blue')
 
+// program.parse(process.argv)
+program.parse()
 const options = program.opts()
-if (options.debug) console.log(options)
-console.log('pizza details:')
-if (options.small) console.log('- small pizza size')
-if (options.pizzaType) console.log(`- ${options.pizzaType}`)
+
+console.log(`cheese: ${options.cheese}`) */
+
+// 必填参数
+program.requiredOption('-c, --cheese <type>', 'pizza must have cheese')
+
+// 监听指令
+program.on('--help', function () {
+  console.log('================================')
+  
+})
+
+program.parse()
