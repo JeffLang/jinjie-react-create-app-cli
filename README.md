@@ -408,3 +408,56 @@ program.parse(process.argv);
 // ...
 ```
 
+### 4.4 归档指令
+
+一般我们会将这些指令单独放在一个地方去归档，以便于以后维护，比如再根目录中新建一个lib来专门放这些指令的信息，将`help`指令的信息放在——`lib/core/help.js`：
+
+```javascript
+const program = require('commander')
+
+const helpOptions = () => {
+  // 增加自己的options
+  program.option('-d --dest <dest>', 'A destination folder, 例如: -d /src/home/index.js')
+  program.option('-f --framework <framework>', 'Your framework, 例如: React / Vue')
+
+  // 监听指令
+  program.on('--help', function () {
+    console.log('')
+    console.log('others')
+    console.log(' others')
+  })
+}
+
+module.exports = helpOptions
+
+```
+
+`index.js`：
+
+```javascript
+#!/urs/bin/env node
+const program = require('commander')
+
+// 查看版本号
+program.version(require('../package.json').version)
+
+const helpOptions = require('../lib/core/help')
+
+// 帮助和可选信息
+helpOptions()
+
+program.parse(process.argv)
+
+```
+
+测试：
+
+![image-20231114144114331](README.assets/image-20231114144114331.png)
+
+### 4.5 配置指令
+
+通过`.command()`或`.addCommand()`可以配置命令，有两种实现方式：为命令绑定处理函数，或者将命令单独写成一个可执行文件（详述见后文）。子命令支持嵌套。
+
+`.command()`的第一个参数为命令名称。命令参数可以跟在名称后面，也可以用`.argument()`单独指定。参数可为必选的（尖括号表示`<xxx>`）、可选的（方括号表示`[xxx]`）或变长参数（点号便是，如果使用，只能是最后一个参数）。
+
+使用`.addCommand()`向`program`增加配置好的子命令
