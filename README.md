@@ -461,3 +461,83 @@ program.parse(process.argv)
 `.command()`的第一个参数为命令名称。命令参数可以跟在名称后面，也可以用`.argument()`单独指定。参数可为必选的（尖括号表示`<xxx>`）、可选的（方括号表示`[xxx]`）或变长参数（点号便是，如果使用，只能是最后一个参数）。
 
 使用`.addCommand()`向`program`增加配置好的子命令
+
+```javascript
+// 通过绑定处理函数实现命令（这里的指令描述为放在`.command`中）
+// 返回新生成的命令（即该子命令）以供继续配置
+program
+  .command('clone <source> [destination]')
+  .description('clone a repository into a newly created directory')
+  .action((source, destination) => {
+    console.log('clone command called');
+  });
+
+// 通过独立的的可执行文件实现命令 (注意这里指令描述是作为`.command`的第二个参数)
+// 返回最顶层的命令以供继续添加子命令
+program
+  .command('start <service>', 'start named service')
+  .command('stop [service]', 'stop named service, or all if no name supplied');
+
+// 分别装配命令
+// 返回最顶层的命令以供继续添加子命令
+program
+  .addCommand(build.makeBuildCommand());
+
+```
+
+使用`.command()`和`addCommand()`来指定选项的相关设置。当设置`hidden: true`时，该命令不会打印在帮助信息里。当设置`isDefault: true`时，若没有指定其他子命令，则会默认执行这个命令。
+
+### 4.6 指令参数
+
+如上所述，子命令的参数可以通过`.commad()`来指定。对于有独立可执行文件的子命令来说，参数只能这种方法指定。而其他子命令，参数也可以用以下方法。
+
+在`Command`对象上使用`argument()`来按次序指定命令参数（测试也 可以直接通过`program的aegument()`）。该方法接受参数名称和参数描述。参数可为必选的（尖括号表示，例如`<required>`）或可选的（方括号表示，例如`[optional]`）。
+
+```javascript
+#!/urs/bin/env node
+const program = require('commander')
+
+// 查看版本号
+program.version(require('../package.json').version)
+
+const helpOptions = require('../lib/core/help')
+
+// 帮助和可选信息
+helpOptions()
+
+program
+  .version('0.1.0')
+  .argument('<username>', 'user to login')
+  .argument('[password]', 'password for user, if required', 'no password given')
+  .action((username, password) => {
+    console.log('username:', username)
+    console.log('password:', password)
+  })
+
+program.parse(process.argv)
+
+```
+
+测试：
+
+```shell
+$ ljj jeff 123456
+username: jeff
+password: 123456
+```
+
+在参数名后加上`...`来声明可变参数，且只有最后一个参数支持这种用法。可变参数会以数组的形式传递给处理函数。例如：
+
+```javascript
+program
+  .version('0.1.0')
+  .command('rmdir')
+  .argument('<dirs...>')
+  .action(function (dirs) {
+    dirs.forEach((dir) => {
+      console.log('rmdir %s', dir);
+    });
+  });
+
+```
+
