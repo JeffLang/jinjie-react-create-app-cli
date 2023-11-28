@@ -1,4 +1,5 @@
-#!/urs/bin/env node
+#! /usr/bin/env node
+
 const program = require('commander')
 
 // 查看版本号

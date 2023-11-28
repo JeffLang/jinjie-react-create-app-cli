@@ -541,3 +541,19 @@ program
 
 ```
 
+# 遇到的问题
+
+## 1. `npm link`失效
+
+- 问题：`npm link` 后失败，遇到`--No such file or directory`
+
+- 解决
+
+  ```javascript
+  // 失效
+  #!/urs/bin/env node
+  // 修改为次重新npm link解决
+  #! /usr/bin/env node
+  ```
+
+  
