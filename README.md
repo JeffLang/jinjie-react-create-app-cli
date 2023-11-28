@@ -107,10 +107,10 @@ program
   .option("-f, --first", "display just the first substring") // --first 是一个布尔值
   .option("-s, --separator <char>", "separator character", ",") // 定义了一个 -s 或 --separator 选项，它允许用户指定分隔符字符，如果用户未提供分隔符，则默认为逗号 (,)
   .action((str, options) => {
-    console.log('options', options);
-    const limit = options.first ? 1 : undefined;
-    console.log(str.split(options.separator, limit));
-  });
+  console.log('options', options);
+  const limit = options.first ? 1 : undefined;
+  console.log(str.split(options.separator, limit));
+});
 
 
 program.parse(); // 调用program.parse()方法，以根据定义的选项解析命令行参数。
@@ -178,8 +178,8 @@ const { program } = require('commander');
 
 ```javasc
 /**
- * 使用es方法必须在package中配置 "type": "module"
- */
+* 使用es方法必须在package中配置 "type": "module"
+*/
 import { program } from 'commander'
 import packageJson from '../package.json' assert { type: 'json' }
 ```
@@ -249,10 +249,10 @@ program
   .option('-f, --first', 'display just the first substring') // --first 是一个布尔值
   .option('-s, --separator <char>', 'separator character', ',') // 定义了一个 -s 或 --separator 选项，它允许用户指定分隔符字符，如果用户未提供分隔符，则默认为逗号 (,)
   .action((str, options) => {
-    console.log('options', options)
-    const limit = options.first ? 1 : undefined
-    console.log(str.split(options.separator, limit))
-  })
+  console.log('options', options)
+  const limit = options.first ? 1 : undefined
+  console.log(str.split(options.separator, limit))
+})
 
 program.parse() // 调用program.parse()方法，以根据定义的选项解析命令行参数。
 
@@ -510,9 +510,9 @@ program
   .argument('<username>', 'user to login')
   .argument('[password]', 'password for user, if required', 'no password given')
   .action((username, password) => {
-    console.log('username:', username)
-    console.log('password:', password)
-  })
+  console.log('username:', username)
+  console.log('password:', password)
+})
 
 program.parse(process.argv)
 
@@ -534,12 +534,64 @@ program
   .command('rmdir')
   .argument('<dirs...>')
   .action(function (dirs) {
-    dirs.forEach((dir) => {
-      console.log('rmdir %s', dir);
-    });
+  dirs.forEach((dir) => {
+    console.log('rmdir %s', dir);
   });
+});
 
 ```
+
+有一种便捷方式可以一次性指定多个参数，但不包含参数描述
+
+```javascript
+program
+  .version('0.1.0')
+  .command('rmdir')
+  .arguments('<username> <password>')
+  .argument('<dirs...>')
+  .action(function (a, b, c) {
+  console.log('dirs:', a, b, c)
+})
+```
+
+#### 4.6.1 其他参数配置
+
+有少数附加功能可以直接构造`Argument`对象，对参数进行更加详尽的配置
+
+```javascript
+program
+  .addArgument(new commander.Argument('<drink-size>', 'drink cup size').choices(['small', 'medium', 'large']))
+  .addArgument(new commander.Argument('[timeout]', 'timeout in seconds').default(60, 'one minute'))
+```
+
+在这段代码中：
+
+- `<drink-size>` 是一个必需的参数，它接受三个选项：‘small’，‘medium’，‘large’。
+- `[timeout]` 是一个可选参数，其默认值为60秒。如果未提供，将设置为 ‘one minute’。
+
+请记住将 `'small'`，`'medium'`，`'large'` 和 `60` 替换为你的实际值。另外，不要忘记在最后调用 `program.parse(process.argv);` 来解析命令行参数。
+
+#### 4.6.2 自定义参数处理
+
+选项的参数可以通过自定义函数来处理（与处理选项参数时类似），该函数接收两个参数：用户新输入的参数值和当前已有的参数值（即上一次调用自定义处理函数后的返回值），返回新的命令参数值。
+
+处理后的参数值会传递给命令处理函数，同时可通过`process.argv(.processedArgs)`获取。可以在自定义函数的后面设置命令参数的默认值或初始值。
+
+```javascript
+program
+  .command('add')
+  .argument('<first>', 'integer argument', myParseInt)
+  .argument('[second]', 'integer argument', myParseInt, 1000)
+  .action((first, second) => {
+  console.log(`${first} + ${second} = ${first + second}`);
+})
+;
+
+```
+
+### 4.7 处理函数
+
+
 
 # 遇到的问题
 
