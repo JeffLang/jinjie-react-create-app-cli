@@ -37,7 +37,8 @@ program
 const drinkSize = program.processedArgs['drink-size']
 console.log('drinkSize', drinkSize) */
 
-program
+// 处理函数
+/* program
   .argument('<name>')
   .option('-t, --title <honorific>', 'title to use before name')
   .option('-d, --debug', 'display some debugging')
@@ -47,6 +48,26 @@ program
     }
     const title = options.title ? `${options.title} ` : ''
     console.log(`Thank-you ${title}${name}`)
-  })
+  }) */
+
+/* 
+  program
+  .command('serve')
+  .argument('<script>')
+  .option('-p, --port <number>', 'port number', 80)
+  .action(function() {
+    console.error('Run script %s on port %s', this.args[0], this.opts().port);
+  });
+
+  */
+
+async function run() {
+  /* 在这里编写代码 */
+}
+
+async function main() {
+  program.command('run').action(run)
+  await program.parseAsync(process.argv)
+}
 
 program.parse(process.argv)
