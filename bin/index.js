@@ -61,8 +61,15 @@ console.log('drinkSize', drinkSize) */
 
   */
 
-async function run() {
-  /* 在这里编写代码 */
+// 处理函数支持async，相应的，需要使用.parseAsync代替.parse。
+/* async function run() {
+  // 在这里编写代码
+  const res = await new Promise(resolve => {
+    setTimeout(() => {
+      return resolve('OK')
+    }, 1000)
+  })
+  console.log('res', res)
 }
 
 async function main() {
@@ -70,4 +77,15 @@ async function main() {
   await program.parseAsync(process.argv)
 }
 
-program.parse(process.argv)
+main() */
+
+// 生命周期钩子
+program.option('-t, --trace', 'display trace statements for commands').hook('preAction', (thisCommand, actionCommand) => {
+  if (thisCommand.opts().trace) {
+    console.log(`About to call action handler for subcommand: ${actionCommand.name()}`)
+    console.log('arguments: %O', actionCommand.args)
+    console.log('options: %o', actionCommand.opts())
+  }
+})
+
+// program.parse(process.argv)

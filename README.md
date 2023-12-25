@@ -594,7 +594,7 @@ program
 命令处理函数的参数，为该命令声明的所有参数，除此之外还会附加两个额外参数：一个是解析出的选项，另一个则是该命令对象自身。
 
 ```js
-js复制代码program
+program
   .argument('<name>')
   .option('-t, --title <honorific>', 'title to use before name')
   .option('-d, --debug', 'display some debugging')
@@ -609,8 +609,8 @@ js复制代码program
 
 测试：
 
-```js
-js复制代码ljy-create-react-app % ljy --title=hello kevin -d
+```shell
+ljy-create-react-app % ljy --title=hello kevin -d
 Called ljy with options { title: 'hello', debug: true }
 Thank-you hello kevin
 ```
@@ -618,19 +618,19 @@ Thank-you hello kevin
 如果你愿意，你可以跳过为处理函数声明参数直接使用 command。 `this` 关键字设置为运行命令，可以在函数表达式中使用（但不能从箭头函数中使用）。
 
 ```js
-js复制代码program
+program
   .command('serve')
   .argument('<script>')
   .option('-p, --port <number>', 'port number', 80)
   .action(function() {
-    console.error('Run script %s on port %s', this.args[0], this.opts().port);
-  });
+  console.error('Run script %s on port %s', this.args[0], this.opts().port);
+});
 ```
 
 处理函数支持`async`，相应的，需要使用`.parseAsync`代替`.parse`。
 
 ```js
-js复制代码async function run() { /* 在这里编写代码 */ }
+async function run() { /* 在这里编写代码 */ }
 
 async function main() {
   program
@@ -641,6 +641,36 @@ async function main() {
 ```
 
 使用命令时，所给的选项和命令参数会被验证是否有效。凡是有未知的选项，或缺少所需的命令参数，都会报错。 如要允许使用未知的选项，可以调用`.allowUnknownOption()`。默认情况下，传入过多的参数并不报错，但也可以通过调用`.allowExcessArguments(false)`来启用过多参数的报错。
+
+### 4.8 生命周期钩子
+
+可以在命令的生命周期事件上设置回调函数
+
+```javascript
+program
+  .option('-t, --trace', 'display trace statements for commands')
+  .hook('preAction', (thisCommand, actionCommand) => {
+    if (thisCommand.opts().trace) {
+      console.log(`About to call action handler for subcommand: ${actionCommand.name()}`);
+      console.log('arguments: %O', actionCommand.args);
+      console.log('options: %o', actionCommand.opts());
+    }
+  });
+
+```
+
+钩子函数支持`async`，相应的，需要使用`.parseAsync`代替`.parse`。一个事件上可以添加多个钩子。
+
+支持的事件有：
+
+| 事件名称                  | 触发时机                            | 参数列表                       |
+| ------------------------- | ----------------------------------- | ------------------------------ |
+| `preAction`, `postAction` | 本命令或其子命令的处理函数执行前/后 | `(thisCommand, actionCommand)` |
+| `preSubcommand`           | 在其直接子命令解析之前调用          | `(thisCommand, subcommand)`    |
+
+### 5、
+
+
 
 # 遇到的问题
 
