@@ -647,16 +647,20 @@ async function main() {
 可以在命令的生命周期事件上设置回调函数
 
 ```javascript
+// 生命周期钩子
 program
+  .command('hello <name>')
   .option('-t, --trace', 'display trace statements for commands')
+  .description('Say hello to someone')
   .hook('preAction', (thisCommand, actionCommand) => {
-    if (thisCommand.opts().trace) {
-      console.log(`About to call action handler for subcommand: ${actionCommand.name()}`);
-      console.log('arguments: %O', actionCommand.args);
-      console.log('options: %o', actionCommand.opts());
-    }
-  });
-
+  console.log(`Hello`, thisCommand.args)
+  console.log(`About to call action handler for subcommand: ${actionCommand.name()}`)
+  console.log('arguments: %O', actionCommand.args)
+  console.log('options: %o', actionCommand.opts())
+})
+  .action(name => {
+  console.log(`Hello, ${name}!`)
+})
 ```
 
 钩子函数支持`async`，相应的，需要使用`.parseAsync`代替`.parse`。一个事件上可以添加多个钩子。
@@ -668,7 +672,109 @@ program
 | `preAction`, `postAction` | 本命令或其子命令的处理函数执行前/后 | `(thisCommand, actionCommand)` |
 | `preSubcommand`           | 在其直接子命令解析之前调用          | `(thisCommand, subcommand)`    |
 
-### 5、
+## 5、设计 create action
+
+一般我们会将这些指令单独放在一个地方去归档，以便于以后维护，比如在根目录中新建一个`lib`专门来放这些指令的信息，将`help`指令的信息放在`lib/core/help.js`，创建指令的信息放在`lib/core/create.js`
+
+### 5.1 helpOptions
+
+下面实现`helpOptions`:
+
+```javascript
+// lib/core/help.js
+
+const program = require('commander');
+
+const helpOptions = () => {
+
+  // 增加自己的options
+  program.option('-d --dest <dest>', 'A destination folder，例如： -d /src/home/index.js')
+  program.option('-f --framework <framework>', 'Your framework，例如： React / Vue')
+
+  // 监听指令
+  program.on('--help', function(){
+    console.log('')
+    console.log('Others')
+    console.log(' others')
+  })
+}
+
+module.exports = helpOptions;
+
+```
+
+在`bin/index.js`中使用：
+
+```javascript
+#! /usr/bin/env node
+
+// bin/index.js
+
+const program =  require('commander');
+
+// 查看版本号
+program.version(require('../package.json').version);
+
+const helpOptions = require('../lib/core/help');
+
+// 帮助和可选信息
+helpOptions();
+
+program.parse(process.argv);
+
+```
+
+### 5.2 createCommands
+
+再实现`createCommands`
+
+```javascript
+const program = require('commander')
+
+const createCommands = () => {
+  program
+    .command('create <project> [others...]')
+    .description('clone a repo into a folder')
+    .action((project, others) => {
+      console.log('project', project)
+      console.log('others', others)
+    })
+}
+
+module.exports = createCommands
+
+```
+
+并引入到`bin/index.js`中
+
+```javascript
+#!/usr/bin/env node
+
+const program =  require('commander');
+
+// 查看版本号
+program.version(require('./package.json').version);
+
+const helpOptions = require('./lib/core/help');
+const createCommands =  require('./lib/core/create');
+
+// 帮助和可选信息
+helpOptions();
+
+// 创建指令
+createCommands();
+
+program.parse(process.argv);
+
+```
+
+测试
+
+```shell
+$ jinjie create 123 1234 1234
+project 123
+others [ '1234', '1234' ]
+```
 
 
 
