@@ -15,6 +15,6 @@ const createCommands = require('../lib/core/create')
 // 帮助和可选信息
 helpOptions()
 // create
-// createCommands()
+createCommands()
 
 program.parse(process.argv)

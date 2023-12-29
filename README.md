@@ -776,6 +776,50 @@ project 123
 others [ '1234', '1234' ]
 ```
 
+### 5.3 createProjectActions
+
+`action`的回调函数就是我们脚手架的核心流程了，将其抽离到一个单独的文件`lib/core/action.js`中：
+
+```javascript
+// lib/core/actions
+
+// 引入commands
+const program = require('commander')
+const createProjectAction = require('./actions')
+
+// 定义一个函数存放create命令
+const createCommands = () => {
+  program
+    .command('create <project> [others...]')
+    .description('clone a repository into a folder')
+    .description('clone a repository into a folder')
+  // createProjectAction
+    .action(createProjectAction)
+}
+
+// 导出这个函数
+module.exports = createCommands
+
+```
+
+#### 5.3.1 clone项目
+
+`clone`项目一会会用到一个工具库：[download-git-repo](https://link.juejin.cn/?target=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2Fdownload-git-repo)，它是放在`npm`和`gitlab`上的，在`github`上面没有仓库，`vue-cli`用的也是这个来下载项目模板。
+
+先下载库
+
+```shell
+npm install download-git-repo
+```
+
+这个库不好的地方就是它使用的写法比较老旧：
+
+```javascript
+download('flippidippi/download-git-repo-fixture', 'test/tem',function(err){
+  console.log(err ? 'Error' : 'Success')
+})
+```
+
 
 
 # 遇到的问题
