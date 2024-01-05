@@ -820,7 +820,53 @@ download('flippidippi/download-git-repo-fixture', 'test/tem',function(err){
 })
 ```
 
+我们一般会将repo地址提取出来，方便以后进行维护：
 
+![image-20240104191954787](README.assets/image-20240104191954787.png)
+
+```javascript
+// 这里需要再后面带一个分支信息，否则会报错 仓库地址 "direct:"+仓库的地址+"#分支"
+const reactRepo = 'direct:https://github.com/JeffLang/React18_TS4.x_Webpack5#main'
+
+// 导出
+module.exports = {
+  reactRepo,
+}
+
+```
+
+我们的操作都是在回调里面去做，如果当操作很多的时候，就会造成回调地狱。所幸，node提供了一个模块可以改变这种操作—— `promisify`，可以将这种方法转化成 `promise` 形式。
+
+```javascript
+// lib/core/actions.js
+
+// 封装create指令的actions
+
+// 使用promisify转换为promise写法
+const { promisify } = require('util')
+const download = promisify(require('download-git-repo'))
+// 引入要下载的仓库
+const { reactRepo } = require('../config/repo-config')
+
+// 封装create指令的action
+const createProjectAction = async (project, others) => {
+  console.log('project', project)
+  console.log('others', others)
+
+  // 1. clone项目
+  await download(reactRepo, project, { clone: true })
+
+  // 2. 运行npm install
+
+  // 3. 运行npm run dev
+}
+
+// 导出
+module.exports = createProjectAction
+
+```
+
+此时就可以克隆出我的配置对应地址的仓库了
 
 # 遇到的问题
 
@@ -837,4 +883,52 @@ download('flippidippi/download-git-repo-fixture', 'test/tem',function(err){
   #! /usr/bin/env node
   ```
 
+  ```javascript
+  // lib/core/actions.js
   
+  // 封装create指令的actions
+  
+  // 使用promisify转换为promise写法
+  const { promisify } = require('util')
+  const download = promisify(require('download-git-repo'))
+  // 引入要下载的仓库
+  const { reactRepo } = require('../config/repo-config')
+  
+  // 封装create指令的action
+  const createProjectAction = async (project, others) => {
+    console.log('project', project)
+    console.log('others', others)
+  
+    // 1. clone项目
+    await download(reactRepo, project, { clone: true })
+  
+    // 2. 运行npm install
+  
+    // 3. 运行npm run dev
+  }
+  
+  // 导出
+  module.exports = createProjectAction
+  
+  ```
+  
+  现在我们测试一下这个指令，新建一个测试文件夹，然后再终端运行：
+  
+  ```shell
+  jinjie create demo-repo
+  ```
+  
+  #### 5.3.2 执行 npm install
+  
+  接下来，我们希望再clone完项目代码之后，自动执行`pcakage.json`中的`dependencies`依赖的安装，并且将依赖下载的信息打印再控制台里。
+  
+  > 需要注意的是，我这里使用的是pnpm，如果你没有这个工具，可能会报错。
+
+还可以使用`chalk`对控制台信息做一些美化，先安装依赖：
+
+```shell
+npm i chalk@4.0.0
+```
+
+
+
