@@ -21,7 +21,9 @@
   "dependencies": {
     "chalk": "^4.0.0",
     "commander": "^11.1.0",
-    "download-git-repo": "^3.0.2"
+    "download-git-repo": "^3.0.2",
+    "figlet": "^1.7.0",
+    "ora": "^5.4.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^18.4.3",

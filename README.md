@@ -868,6 +868,133 @@ module.exports = createProjectAction
 
 此时就可以克隆出我的配置对应地址的仓库了
 
+#### 5.3.2 执行 npm install
+
+接下来，我们希望再clone完项目代码之后，自动执行`pcakage.json`中的`dependencies`依赖的安装，并且将依赖下载的信息打印再控制台里。
+
+> 需要注意的是，我这里使用的是pnpm，如果你没有这个工具，可能会报错。
+
+还可以使用`chalk`对控制台信息做一些美化，先安装依赖：
+
+```shell
+npm i chalk@4.0.0
+```
+
+然后就可以在代码中使用了
+
+```javascript
+// lib/core/actions.js
+
+// 封装create指令的actions
+
+// 使用promisify转换为promise写法
+const { promisify } = require('util')
+const download = promisify(require('download-git-repo'))
+
+// 引入要下载的仓库
+const { reactRepo } = require('../config/repo-config')
+const { spawnCommand } = require('../utils/terminal')
+
+// 引入控制台美化工具
+const chalk = require('chalk')
+
+// 封装create指令的action project是克隆的项目 others clone project后面的参数
+const createProjectAction = async (project, others) => {
+  console.log(chalk.green.underline.bold('>start download repository...'))
+
+  // 1. clone项目
+  await download(reactRepo, project, { clone: true })
+
+  // 2. 运行npm install
+  // 判断平台 w32为windows平台 window 执行 npm 命令实际执行的 npm.cmd
+  const command = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
+  await spawnCommand(command, ['install'], { cwd: `./${project}` })
+
+  // 3，运行npm run dev
+  await spawnCommand(command, ['start'], { cwd: `./${project}` })
+}
+
+// 导出
+module.exports = createProjectAction
+
+```
+
+> 终端封装
+
+ ```javascript
+// lib/utils/terminal
+/**
+ * 终端命令相关
+ */
+
+// child_process 是 Node.js 中的一个模块，提供生成子进程的功能
+const { spawn } = require('child_process')
+
+// 创建进程执行终端命令
+const spawnCommand = (command, args, options) => {
+  // 返回一个promise
+  return new Promise((resolve, reject) => {
+    // 通过 spawn 创建一个子进程,并把进程返回
+    const childProcess = spawn(command, args, options)
+    // 将子进程输出的东西放进当前进程的全局变量 process 的 stdout
+    // 比如说,当子进程执行 npm install ,执行完的时候,会输出一些信息
+    // childProcess.stdout 就是这个输出信息流，通过 pipe 将流信息存到当前进程（主进程）
+    childProcess.stdout.pipe(process.stdout)
+    // 将子进程错误信息放进当前进程
+    childProcess.stderr.pipe(process.stderr)
+    childProcess.on('close', code => {
+      if (code === 0) {
+        resolve()
+      } else {
+        reject(`错误：${code}`)
+      }
+    })
+  })
+}
+
+// 导出
+module.exports = {
+  spawnCommand,
+}
+
+ ```
+
+执行`jinjie create demo-repo`之后就可以看到代码拉到了本地！
+
+### 5.4 命令行 loading 效果
+
+`ora` 使用非常简单，可以直接看下面的案例。更多使用: [ora 文档](https://link.juejin.cn/?target=https%3A%2F%2Fxie.infoq.cn%2Flink%3Ftarget%3Dhttps%3A%2F%2Fgithub.com%2Fsindresorhus%2Fora)，利用 `ora` 来实现一个简单的命令行 `loading` 效果。
+
+先安装`ora`：
+
+```shell
+npm i ora@5.4.0
+```
+
+然后在`acrtions.js`中使用：
+
+```javascript
+// ...
+// 使用ora实现loading效果
+const ora = require('ora')
+
+// 定义一个loading
+const gitRepoSpinner = ora('Downloading github repo, please wait a while...')
+
+// ...
+// loading开始
+gitRepoSpinner.start()
+// 1. clone项目
+await download(reactRepo, project, { clone: true })
+// loading结束
+gitRepoSpinner.succeed()
+// ...
+```
+
+重新执行 `jinjie create demo-repo`，就可以看到控制台有了 `loading` 效果：
+
+
+
 # 遇到的问题
 
 ## 1. `npm link`失效
@@ -918,17 +1045,41 @@ module.exports = createProjectAction
   jinjie create demo-repo
   ```
   
-  #### 5.3.2 执行 npm install
+  #### 5.5 ASCII 的艺术字
   
-  接下来，我们希望再clone完项目代码之后，自动执行`pcakage.json`中的`dependencies`依赖的安装，并且将依赖下载的信息打印再控制台里。
+  [figlet](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2Fpatorjk%2Ffiglet.js) 模块可以将 `text` 文本转化成生成基于 `ASCII` 的艺术字。
   
-  > 需要注意的是，我这里使用的是pnpm，如果你没有这个工具，可能会报错。
-
-还可以使用`chalk`对控制台信息做一些美化，先安装依赖：
-
-```shell
-npm i chalk@4.0.0
-```
-
-
-
+  先安装依赖：
+  
+  ```shell
+  npm install figlet
+  ```
+  
+  然后在 `actions.js` 中使用：
+  
+  ```javascript
+  // ...
+  // ASCII 的艺术字
+  var figlet = require('figlet')
+  
+  // 定义一个loading
+  const gitRepoSpinner = ora('Downloading github repo, please wait a while...')
+  
+  // 封装create指令的action project是克隆的项目 others clone project后面的参数
+  const createProjectAction = async (project, others) => {
+    // ASCII艺术字
+    console.log(
+      '\r\n' +
+      figlet.textSync('JINJIE-CLI', {
+        font: 'Big',
+        horizontalLayout: 'default',
+        verticalLayout: 'default',
+        width: 80,
+        whitespaceBreak: true,
+      }) +
+      '\r\n',
+      // ...
+    )}
+  ```
+  
+  重新执行 `jinjie create demo-repo`，就会看到：
